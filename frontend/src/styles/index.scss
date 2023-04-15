@@ -1,0 +1,130 @@
+@import url("https://fonts.googleapis.com/css2?family=Play:wght@400;700&display=swap");
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+
+$black: #222831;
+$grey: #30475e;
+$white: #e8e8e8;
+$red: #f05454;
+
+#drawingPanel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#pixels {
+  margin-bottom: 2rem;
+}
+
+#editor {
+  border: 1px solid $red;
+  border-radius: 0.25rem;
+  padding: 1rem 4rem 2rem 4rem;
+  margin-top: 2rem;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  h1 {
+    margin-bottom: 1.5rem;
+  }
+
+  h2 {
+    margin-bottom: 1rem;
+  }
+
+  #options {
+    display: flex;
+    margin-bottom: 3rem;
+    justify-content: center;
+
+    .option {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panelInput {
+      height: 5rem;
+      width: 5rem;
+      font-size: 2rem;
+      text-align: center;
+      background-color: $black;
+      color: $white;
+      border: 1px solid $grey;
+      border-radius: 0.25rem;
+      margin: 0 1rem 0.5rem 1rem;
+      padding-left: 1rem;
+
+      &:focus {
+        outline: none !important;
+        border-color: $red;
+        box-shadow: 0 0 0.5rem $grey;
+      }
+    }
+  }
+
+  .button {
+    font-size: 1.25rem;
+    background-color: $red;
+    color: $white;
+    padding: 1rem 3rem;
+    border-radius: 0.25rem;
+    text-transform: uppercase;
+    border: 1px solid transparent;
+    transition: background-color 0.2s ease-in-out;
+    margin-bottom: 2rem;
+
+    &:hover {
+      cursor: pointer;
+      background-color: transparent;
+      border-color: $red;
+    }
+  }
+
+  .circle-picker {
+    margin-bottom: 1.5rem !important;
+  }
+}
+
+.pixel {
+  &:hover {
+    cursor: pointer;
+  }
+}
+
+.row {
+  display: flex;
+  width: fit-content;
+}
+
+body,
+html {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: $black;
+  color: $white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: "Play", sans-serif;
+  text-align: center;
+  min-width: fit-content;
+}
