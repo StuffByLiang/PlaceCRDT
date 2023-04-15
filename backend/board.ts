@@ -1,7 +1,7 @@
 // board.ts
 import * as Automerge from "@automerge/automerge";
 import { Board, Color, Pixel } from "./types";
-import { List } from "@automerge/automerge";
+import { List, Change } from "@automerge/automerge";
 
 // Initialize an empty board
 export function initBoard(): Board {
@@ -25,6 +25,17 @@ export function setColor(doc: Automerge.Doc<Board>, x: number, y: number, color:
 export function getColor(doc: Automerge.Doc<Board>, x: number, y: number): Color {
   return doc.pixels[x][y].color;
 }
+
+// export function sendChange(changes: List<Change>, channel: BroadcastChannel, docId: string) {
+//   const binary = Automerge.save(updatedDoc);
+//   localforage.setItem(docId, binary).catch(err => console.log(err));
+//   channel(binary);
+// }
+
+// export function receiveChanges(channel: BroadcastChannel) {
+//   const changes = channel.receive();
+
+// }
 
 // Initialize an Automerge document with a new board
 export function createAutomergeBoard(): Automerge.Doc<Board> {
