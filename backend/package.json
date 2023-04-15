@@ -9,6 +9,7 @@
   "dependencies": {
     "@automerge/automerge": "^2.0.2",
     "assert": "^2.0.0",
+    "create-hash": "^1.2.0",
     "events": "^3.3.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.4"
