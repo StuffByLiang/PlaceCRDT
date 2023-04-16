@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import './App.css';
 import PixelCanvas from './components/PixelCanvas';
 import ColorPicker from './components/ColorPicker';
-import { Doc } from '@automerge/automerge';
-import { Board } from './types';
 import { useBoard } from './board';
 
 const colors = [
