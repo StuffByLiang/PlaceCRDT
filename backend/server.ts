@@ -38,7 +38,6 @@ io.on('connection', (socket: any) => {
     console.log('a user connected');
     socket.emit('board', { boardBinary: Automerge.save(board) }); // send initial board
 
-    // print hash of automerge.save(board)
     socket.on('disconnect', () => {
         console.log('user disconnected');
     });
