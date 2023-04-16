@@ -5,8 +5,10 @@ import localforage from "localforage";
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 
+const url = process.env.NODE_ENV === "development" ? "localhost:4161" : "https://placecrdtbackend.stuffbyliang.com";
+
 let board: Automerge.Doc<Board> = createAutomergeBoard(40);
-const socket = io("https://placecrdtbackend.stuffbyliang.com", {
+const socket = io(url, {
   autoConnect: false
 });
 

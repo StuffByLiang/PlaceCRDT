@@ -8,9 +8,11 @@ app.use(cors())
 const http = require('http');
 const server = http.createServer(app);
 const { Server } = require("socket.io");
+
 const io = new Server(server, {
+    // add localhost and https://placecrdt.stuffbyliang.com as origin too
     cors: {
-        origin: "https://placecrdt.stuffbyliang.com"
+        origin: ["http://localhost:3000", "https://placecrdtfrontend.stuffbyliang.com"],
     }
 });
 
