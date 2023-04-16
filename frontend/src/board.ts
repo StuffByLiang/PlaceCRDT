@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 
 let board: Automerge.Doc<Board> = createAutomergeBoard(40);
-const socket = io("http://localhost:4000", {
+const socket = io("https://placecrdtbackend.stuffbyliang.com", {
   autoConnect: false
 });
 
