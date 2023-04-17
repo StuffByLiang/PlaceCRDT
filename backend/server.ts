@@ -12,7 +12,7 @@ const { Server } = require("socket.io");
 const io = new Server(server, {
     // add localhost and https://placecrdt.stuffbyliang.com as origin too
     cors: {
-        origin: ["http://localhost:3000", "https://placecrdtfrontend.stuffbyliang.com"],
+        origin: ["http://localhost:4160", "https://placecrdt.stuffbyliang.com"],
     }
 });
 
@@ -47,7 +47,7 @@ io.on('connection', (socket: any) => {
 
     socket.on('board', ({ boardBinary }: any) => {
         const otherBoard: any = Automerge.load(new Uint8Array(boardBinary));
-        console.log("received board of size" + boardBinary.length)
+        console.log("received board of size     " + boardBinary.length)
         board = Automerge.merge(board, otherBoard);
         // broadcast to all clients the merged board
         io.emit('board', { boardBinary: Automerge.save(board) });
