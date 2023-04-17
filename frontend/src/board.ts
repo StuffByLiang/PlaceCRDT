@@ -53,16 +53,11 @@ export function useBoard() {
     loadBoard();
     socket.connect();
 
-    socket.on("changes", ({ changeBinary }: any) => {
+    socket.on("board", ({ boardBinary }: any) => {
       // receiving the board from the server
-      console.log("changes received")
-      // const otherBoard: any = Automerge.load(new Uint8Array(boardBinary));
-      // let newBoard = Automerge.merge(board, otherBoard)
-      const newBoard: any = Automerge.applyChanges(board, changeBinary)[0];
-      board = newBoard;
-      let newbinary = Automerge.save(newBoard);
-
-      setCanvasData(getCanvasData());
+      const otherBoard: any = Automerge.load(new Uint8Array(boardBinary));
+      let newBoard = Automerge.merge(board, otherBoard)
+      updateBoard(newBoard);
       setSyncedWithServer(true);
     })
 
