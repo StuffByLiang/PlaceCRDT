@@ -16,16 +16,18 @@ const io = new Server(server, {
     }
 });
 
+// new Uint8Array() 17000 (ten times less) 1600
+// uint8array of size 1600
+// given index, y = Math.floor(index / 40), x = index % 40 
+// 
+
 let board = createAutomergeBoard(40);
+// print out size of Automerge.save(board)
+console.log(Automerge.save(board).length);
 
 // Initialize an empty board
 function initBoard(size: number): Board {
-    const pixels: Pixel[][] = Array.from({ length: size }, (_, i) =>
-        Array.from({ length: size }, (_, j) => ({
-            position: [i, j],
-            color: "#ffffff", // Default color: white
-        }))
-    );
+    const pixels = new Array(size * size).fill(0);
     return { pixels };
 }
 
@@ -45,7 +47,7 @@ io.on('connection', (socket: any) => {
 
     socket.on('board', ({ boardBinary }: any) => {
         const otherBoard: any = Automerge.load(new Uint8Array(boardBinary));
-        console.log("received board")
+        console.log("received board of size" + boardBinary.length)
         board = Automerge.merge(board, otherBoard);
         // broadcast to all clients the merged board
         io.emit('board', { boardBinary: Automerge.save(board) });
