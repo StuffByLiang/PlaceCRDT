@@ -9,10 +9,11 @@ function App() {
   const [selectedColor, setSelectedColor] = useState(colors[0]);
   const width = 40;
   const height = 40;
-  const { canvasData, setColor, syncedWithServer } = useBoard();
+  const { canvasData, setColor, syncedWithServer, loaded } = useBoard();
 
 
   const handlePixelClick = (x: number, y: number) => {
+    if (!loaded) return;
     // update the canvas data in state
     setColor(x, y, colorToUint8[selectedColor]);
   };
@@ -32,6 +33,13 @@ function App() {
         // red working locally
         <div style={{ color: 'red' }}>Working locally</div>
       )}
+      {loaded ? (
+        // green sycned with server
+        <></>
+      ) : (
+        // red working locally
+        <div style={{ color: 'red' }}>Loading...</div>
+      )}
       <PixelCanvas
         width={width}
         height={height}
@@ -39,7 +47,7 @@ function App() {
         canvasData={canvasData}
         onPixelClick={handlePixelClick}
       />
-      <ColorPicker colors={colors} onSelectColor={handleColorSelect} />
+      <ColorPicker color={selectedColor} colors={colors} onSelectColor={handleColorSelect} />
     </div>
   );
 }

@@ -6,7 +6,7 @@ import * as Automerge from "@automerge/automerge";
 
 // Initialize an empty board
 export function initBoard(size: number): Board {
-    const pixels = new Array(size * size/2).fill(0);
+    const pixels = new Array(size * size).fill(0);
     return { pixels };
 }
 

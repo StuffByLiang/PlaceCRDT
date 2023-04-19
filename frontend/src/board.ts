@@ -38,7 +38,7 @@ import { colorToUint8, uint8ToColor } from "./utils";
 
 export const url = process.env.NODE_ENV === "development" ? "localhost:4161" : "https://placecrdtbackend.stuffbyliang.com";
 
-let board: Automerge.Doc<Board> = createAutomergeBoard(40);
+let board: Automerge.Doc<Board>;
 export const socket = io(url, {
   autoConnect: false
 });
@@ -68,6 +68,7 @@ let syncState = Automerge.initSyncState(); // in-memory sync state
 export function useBoard() {
   const [canvasData, setCanvasData] = useState(getCanvasData());
   const [syncedWithServer, setSyncedWithServer] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     loadBoard();
@@ -81,13 +82,27 @@ export function useBoard() {
       setSyncedWithServer(true);
     })
 
-    socket.on("sync", ({syncMessage}: any) => {
+    // on reconnect
+    socket.on("reconnect", () => {
+      console.log("reconnected")
+      syncBoard();
+    })
+
+    socket.on("synced", () => {
+      console.log("synced")
+      setSyncedWithServer(true);
+    })
+
+    socket.on("sync", ({ syncMessage }: any) => {
       // receiving the sync message from the server
       console.log("sync received")
       const [nextBoard, nextSyncState, patch] = Automerge.receiveSyncMessage(board, syncState, new Uint8Array(syncMessage));
       syncState = nextSyncState;
       updateBoard(nextBoard);
-      setSyncedWithServer(true);
+      let synced = syncBoard();
+      if (synced) {
+        setSyncedWithServer(true);
+      }
     })
 
     // check for disconnect
@@ -97,32 +112,30 @@ export function useBoard() {
     })
   }, []);
 
-  // Set the color of a pixel at the specified position
-  function setColor(x: number, y: number, color: number) {
-    console.log(x, y, color)
-    // time this change
-    const newBoard = Automerge.change(board, (board) => {
-      const position = y * 40 + x;
-      const index = Math.floor(position / 2);
-
-      // if the position is even we set the first 4 bits
-      if (position % 2 === 0) {
-        board.pixels[index] = (board.pixels[index] & 0x0f) | (color << 4);
-      } else {
-        board.pixels[index] = (board.pixels[index] & 0xf0) | color;
-      }
-    });
-    updateBoard(newBoard);
-    // print size of board
-    console.log("board size: " + Automerge.save(newBoard).length)
-
+  function syncBoard() {
     const [nextSyncState, syncMessage] = Automerge.generateSyncMessage(board, syncState);
     syncState = nextSyncState;
 
     if (syncMessage) {
       socket.emit("sync", { syncMessage });
       console.log("sync sent")
+      return false;
+    } else {
+      return true;
     }
+  }
+
+  // Set the color of a pixel at the specified position
+  function setColor(x: number, y: number, color: number) {
+    console.log(x, y, color)
+    // time this change
+    const newBoard = Automerge.change(board, (board) => {
+      board.pixels[y * 40 + x] = color;
+    });
+    updateBoard(newBoard);
+    // print size of board
+    console.log("board size: " + Automerge.save(newBoard).length)
+    syncBoard();
 
     // the following would send the entire board
     // socket.emit("board", { boardBinary: Automerge.save(newBoard) });
@@ -131,11 +144,17 @@ export function useBoard() {
 
   async function loadBoard() {
     const binary: any = await localforage.getItem("board");
+    let newboard: Board;
     if (binary) {
-      let newBoard = Automerge.merge(board, Automerge.load(binary))
+      newboard = Automerge.load(binary)
       console.log("board loaded from local storage")
-      updateBoard(newBoard);
+    } else {
+      console.log("no board found in local storage")
+      newboard = createAutomergeBoard(40);
     }
+    setLoaded(true);
+    updateBoard(newboard);
+    syncBoard();
   }
 
   function updateBoard(newBoard: Automerge.Doc<Board>) {
@@ -145,14 +164,16 @@ export function useBoard() {
     setCanvasData(getCanvasData());
   }
 
-  return { canvasData: getCanvasData(), setColor, syncedWithServer };
+  return { canvasData: getCanvasData(), setColor, syncedWithServer, loaded };
 }
 
 
+// Initialize an empty board
 export function initBoard(size: number): Board {
   const pixels = new Array(size * size).fill(0);
   return { pixels };
 }
+
 
 
 // Initialize an Automerge document with a new board
@@ -164,16 +185,15 @@ export function createAutomergeBoard(size: number): Automerge.Doc<Board> {
 export function getCanvasData(): string[][] {
   // given board.pixel array, return a 2d array of colors
   const canvasData: string[][] = [];
+
+  if (!board) {
+    return canvasData;
+  }
+
   for (let i = 0; i < 40; i++) {
     canvasData.push([]);
     for (let j = 0; j < 40; j++) {
-      const position = i * 40 + j;
-      const index = Math.floor(position / 2);
-      if (position % 2 === 0) {
-        canvasData[i].push(uint8ToColor[board.pixels[index] >> 4]);
-      } else {
-        canvasData[i].push(uint8ToColor[board.pixels[index] & 0x0f]);
-      }
+      canvasData[i].push(uint8ToColor[board.pixels[i * 40 + j]]);
     }
   }
   return canvasData;

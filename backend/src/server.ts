@@ -27,7 +27,7 @@ if (fs.existsSync('board')) {
     console.log("loaded board of size " + boardBinary.length)
 } else {
     board = createAutomergeBoard(40);
-
+    console.log("created board of size " + Automerge.save(board).length)
 }
 let counter = 0;
 
@@ -35,7 +35,7 @@ let counter = 0;
 let syncStates: { [key: string]: Automerge.SyncState } = {} // a hash of [socketId] containing in-memory sync states
 
 io.on('connection', (socket: Socket) => {
-    function updatePeers() {
+    function updatePeers(initiatorSockedId: string) {
         console.log("updating peers")
         Object.entries(syncStates).forEach(([socketId, syncState]) => {
             const [nextSyncState, syncMessage] = Automerge.generateSyncMessage(
@@ -46,13 +46,14 @@ io.on('connection', (socket: Socket) => {
             syncStates[socketId] = nextSyncState
             if (syncMessage) {
                 io.to(socketId).emit('sync', { syncMessage })
+            } else if (socketId === initiatorSockedId) {
+                io.to(socketId).emit('synced')
             }
         })
     }
 
     console.log('a user connected');
     syncStates[socket.id] = Automerge.initSyncState();
-    socket.emit('board', { boardBinary: Automerge.save(board) }); // send initial board
 
     socket.on('disconnect', () => {
         console.log('user disconnected');
@@ -60,6 +61,7 @@ io.on('connection', (socket: Socket) => {
     });
 
     socket.on('sync', ({ syncMessage }: any) => {
+        counter++;
         console.log(syncMessage)
         console.log("received sync message of size " + syncMessage.length)
         const syncState = syncStates[socket.id];
@@ -67,7 +69,7 @@ io.on('connection', (socket: Socket) => {
         board = nextBoard;
         console.log("board is now of size " + Automerge.save(board).length)
         syncStates[socket.id] = nextSyncState;
-        updatePeers();
+        updatePeers(socket.id);
     });
 
     socket.on('board', ({ boardBinary }: any) => {
