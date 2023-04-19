@@ -8,4 +8,7 @@ module.exports = {
     // transform: {
     //     '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest',
     // },
+    transform: {
+      "^.+\\.(ts|tsx)$": "babel-jest",
+    },
   };

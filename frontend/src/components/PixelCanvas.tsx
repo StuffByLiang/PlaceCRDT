@@ -38,6 +38,7 @@ const PixelCanvas = ({ width, height, pixelSize, canvasData, onPixelClick }: Pix
     <div className="PixelCanvas-container" style={{ width: canvasWidth, height: canvasHeight }}>
       <canvas
         className="PixelCanvas"
+        data-testid="pixel-canvas"
         width={canvasWidth}
         height={canvasHeight}
         onClick={event => {

@@ -36,10 +36,10 @@ import { colorToUint8, uint8ToColor } from "./utils";
 //   return acc;
 // }, {} as { [uint8: number]: string });
 
-const url = process.env.NODE_ENV === "development" ? "localhost:4161" : "https://placecrdtbackend.stuffbyliang.com";
+export const url = process.env.NODE_ENV === "development" ? "localhost:4161" : "https://placecrdtbackend.stuffbyliang.com";
 
 let board: Automerge.Doc<Board> = createAutomergeBoard(40);
-const socket = io(url, {
+export const socket = io(url, {
   autoConnect: false
 });
 let syncState = Automerge.initSyncState(); // in-memory sync state
@@ -149,8 +149,8 @@ export function useBoard() {
 }
 
 
-function initBoard(size: number): Board {
-  const pixels = new Array(size * size / 2).fill(0);
+export function initBoard(size: number): Board {
+  const pixels = new Array(size * size).fill(0);
   return { pixels };
 }
 
