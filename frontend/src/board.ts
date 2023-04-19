@@ -92,11 +92,19 @@ export function useBoard() {
     console.log(x, y, color)
     // time this change
     const newBoard = Automerge.change(board, (board) => {
-      board.pixels[y * 40 + x] = color;
-      console.log(board.pixels)
+      const position = y * 40 + x;
+      const index = Math.floor(position/2);
+      
+      // if the position is even we set the first 4 bits
+      if (position % 2 === 0) {
+        board.pixels[index] = (board.pixels[index] & 0x0f) | (color << 4);
+      } else {
+        board.pixels[index] = (board.pixels[index] & 0xf0) | color;
+      }
     });
-    console.log(newBoard.pixels)
     updateBoard(newBoard);
+    // print size of board
+    console.log("board size: " + Automerge.save(newBoard).length)
     socket.emit("board", { boardBinary: Automerge.save(newBoard) });
     console.log("board sent")
   }
@@ -139,9 +147,12 @@ export function getCanvasData(): string[][] {
   for (let i = 0; i < 40; i++) {
     canvasData.push([]);
     for (let j = 0; j < 40; j++) {
-      canvasData[i].push(uint8ToColor[board.pixels[i * 40 + j]]);
-      if (board.pixels[i * 40 + j] != 0) {
-        console.log(uint8ToColor[board.pixels[i * 40 + j]])
+      const position = i * 40 + j;
+      const index = Math.floor(position / 2);
+      if (position % 2 === 0) {
+        canvasData[i].push(uint8ToColor[board.pixels[index] >> 4]);
+      } else {
+        canvasData[i].push(uint8ToColor[board.pixels[index] & 0x0f]);
       }
     }
   }

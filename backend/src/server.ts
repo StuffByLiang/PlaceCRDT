@@ -1,5 +1,7 @@
 import { createAutomergeBoard } from "./board";
 import * as Automerge from "@automerge/automerge";
+import fs from "fs";
+import { Board } from "./types";
 
 const express = require('express');
 const app = express();
@@ -12,26 +14,21 @@ const { Server } = require("socket.io");
 const io = new Server(server, {
     // add localhost and https://placecrdt.stuffbyliang.com as origin too
     cors: {
-        origin: ["http://localhost:4160", "https://placecrdt.stuffbyliang.com"],
+        origin: ["http://localhost:3000", "https://placecrdt.stuffbyliang.com"],
     }
 });
 
+let board: Board;
 
-let board = createAutomergeBoard(40);
-// print out size of Automerge.save(board)
-// console.log(Automerge.save(board).length);
+if (fs.existsSync('board')) {
+    const boardBinary = fs.readFileSync('board');
+    board = Automerge.load(new Uint8Array(boardBinary));
+    console.log("loaded board of size " + boardBinary.length)
+} else {
+    board = createAutomergeBoard(40);
 
-// Initialize an empty board
-// function initBoard(size: number): Board {
-//     const pixels = new Array(size * size).fill(0);
-//     return { pixels };
-// }
-
-// // Initialize an Automerge document with a new board
-// function createAutomergeBoard(size: number): Automerge.Doc<Board> {
-//     const board = initBoard(size);
-//     return Automerge.from(board);
-// }
+}
+let counter = 0;
 
 io.on('connection', (socket: any) => {
     console.log('a user connected');
@@ -42,9 +39,17 @@ io.on('connection', (socket: any) => {
     });
 
     socket.on('board', ({ boardBinary }: any) => {
+        counter++;
         const otherBoard: any = Automerge.load(new Uint8Array(boardBinary));
         console.log("received board of size     " + boardBinary.length)
         board = Automerge.merge(board, otherBoard);
+
+        // save board every 10 merges
+        if (counter % 10 === 0) {
+            console.log("saving board to disk" + Automerge.save(board).length)
+            fs.writeFileSync('board', Automerge.save(board));
+        }
+
         // broadcast to all clients the merged board
         io.emit('board', { boardBinary: Automerge.save(board) });
     });
