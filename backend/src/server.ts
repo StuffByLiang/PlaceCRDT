@@ -12,26 +12,12 @@ const { Server } = require("socket.io");
 const io = new Server(server, {
     // add localhost and https://placecrdt.stuffbyliang.com as origin too
     cors: {
-        origin: ["http://localhost:4160", "https://placecrdt.stuffbyliang.com"],
+        origin: ["http://localhost:3000", "https://placecrdt.stuffbyliang.com"],
     }
 });
 
 
 let board = createAutomergeBoard(40);
-// print out size of Automerge.save(board)
-// console.log(Automerge.save(board).length);
-
-// Initialize an empty board
-// function initBoard(size: number): Board {
-//     const pixels = new Array(size * size).fill(0);
-//     return { pixels };
-// }
-
-// // Initialize an Automerge document with a new board
-// function createAutomergeBoard(size: number): Automerge.Doc<Board> {
-//     const board = initBoard(size);
-//     return Automerge.from(board);
-// }
 
 io.on('connection', (socket: any) => {
     console.log('a user connected');
