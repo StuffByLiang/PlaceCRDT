@@ -1,4 +1,4 @@
-import { Board, Color, Pixel } from "./types";
+import { createAutomergeBoard } from "./board";
 import * as Automerge from "@automerge/automerge";
 
 const express = require('express');
@@ -16,26 +16,22 @@ const io = new Server(server, {
     }
 });
 
-// new Uint8Array() 17000 (ten times less) 1600
-// uint8array of size 1600
-// given index, y = Math.floor(index / 40), x = index % 40 
-// 
 
 let board = createAutomergeBoard(40);
 // print out size of Automerge.save(board)
-console.log(Automerge.save(board).length);
+// console.log(Automerge.save(board).length);
 
 // Initialize an empty board
-function initBoard(size: number): Board {
-    const pixels = new Array(size * size).fill(0);
-    return { pixels };
-}
+// function initBoard(size: number): Board {
+//     const pixels = new Array(size * size).fill(0);
+//     return { pixels };
+// }
 
-// Initialize an Automerge document with a new board
-function createAutomergeBoard(size: number): Automerge.Doc<Board> {
-    const board = initBoard(size);
-    return Automerge.from(board);
-}
+// // Initialize an Automerge document with a new board
+// function createAutomergeBoard(size: number): Automerge.Doc<Board> {
+//     const board = initBoard(size);
+//     return Automerge.from(board);
+// }
 
 io.on('connection', (socket: any) => {
     console.log('a user connected');
