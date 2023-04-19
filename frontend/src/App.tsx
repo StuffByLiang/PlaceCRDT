@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import './App.css';
 import PixelCanvas from './components/PixelCanvas';
 import ColorPicker from './components/ColorPicker';
-import { colorToUint8, colors, useBoard } from './board';
+import { useBoard } from './board';
+import { colorToUint8, uint8ToColor, colors } from './utils';
 
 function App() {
   const [selectedColor, setSelectedColor] = useState(colors[0]);

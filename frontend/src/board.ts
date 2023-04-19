@@ -4,36 +4,37 @@ import { Board } from "./types";
 import localforage from "localforage";
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
+import { colorToUint8, uint8ToColor } from "./utils";
 
-export const colors = [
-  "#ffffff", // white
-  "#000000", // black
-  "#c2c2c2", // light gray
-  "#7f7f7f", // dark gray
-  "#ff0000", // red
-  "#00ff00", // green
-  "#0000ff", // blue
-  "#ffff00", // yellow
-  "#ff00ff", // magenta
-  "#00ffff", // cyan
-  "#a349a4", // purple
-  "#ffb5c5", // light pink
-  "#ff7f00", // orange
-  "#b87333", // brown
-  "#4c2f27", // dark brown
-];
+// export const colors = [
+//   "#ffffff", // white
+//   "#000000", // black
+//   "#c2c2c2", // light gray
+//   "#7f7f7f", // dark gray
+//   "#ff0000", // red
+//   "#00ff00", // green
+//   "#0000ff", // blue
+//   "#ffff00", // yellow
+//   "#ff00ff", // magenta
+//   "#00ffff", // cyan
+//   "#a349a4", // purple
+//   "#ffb5c5", // light pink
+//   "#ff7f00", // orange
+//   "#b87333", // brown
+//   "#4c2f27", // dark brown
+// ];
 
 // give us a mapping from color to uint8
-export const colorToUint8 = colors.reduce((acc, color, i) => {
-  acc[color] = i;
-  return acc;
-}, {} as { [color: string]: number });
+// export const colorToUint8 = colors.reduce((acc, color, i) => {
+//   acc[color] = i;
+//   return acc;
+// }, {} as { [color: string]: number });
 
-// give us a mapping from uint8 to color
-export const uint8ToColor = colors.reduce((acc, color, i) => {
-  acc[i] = color;
-  return acc;
-}, {} as { [uint8: number]: string });
+// // give us a mapping from uint8 to color
+// export const uint8ToColor = colors.reduce((acc, color, i) => {
+//   acc[i] = color;
+//   return acc;
+// }, {} as { [uint8: number]: string });
 
 const url = process.env.NODE_ENV === "development" ? "localhost:4161" : "https://placecrdtbackend.stuffbyliang.com";
 
@@ -42,8 +43,26 @@ const socket = io(url, {
   autoConnect: false
 });
 
-// array of size 1600
-// given index, y = Math.floor(index / 40), x = index % 40 
+// Set the color of a pixel at the specified position
+// export function setColor(x: number, y: number, color: number) {
+//   console.log(x, y, color)
+//   // time this change
+//   const newBoard = Automerge.change(board, (board) => {
+//     board.pixels[y * 40 + x] = color;
+//     console.log(board.pixels)
+//   });
+//   console.log(newBoard.pixels)
+//   updateBoard(newBoard);
+//   socket.emit("board", { boardBinary: Automerge.save(newBoard) });
+//   console.log("board sent")
+// }
+
+// export function updateBoard(newBoard: Automerge.Doc<Board>) {
+//   board = newBoard;
+//   let binary = Automerge.save(newBoard)
+//   localforage.setItem("board", binary).catch(err => console.log(err))
+//   setCanvasData(getCanvasData());
+// }
 
 export function useBoard() {
   const [canvasData, setCanvasData] = useState(getCanvasData());
@@ -128,9 +147,3 @@ export function getCanvasData(): string[][] {
   }
   return canvasData;
 }
-
-// export function updateBoard(newBoard: Automerge.Doc<Board>): Automerge.Doc<Board> {
-//   return Automerge.change(newBoard, (doc) => {
-//     doc.pixels = newBoard.pixels;
-//   });
-// }

@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 
-interface Props {
+interface PixelCanvasProps {
   width: number;
   height: number;
   pixelSize: number;
@@ -8,7 +8,7 @@ interface Props {
   onPixelClick: (x: number, y: number) => void;
 }
 
-const PixelCanvas = ({ width, height, pixelSize, canvasData, onPixelClick }: Props) => {
+const PixelCanvas = ({ width, height, pixelSize, canvasData, onPixelClick }: PixelCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasWidth = width * pixelSize;
   const canvasHeight = height * pixelSize;
