@@ -25,7 +25,7 @@ function App() {
   return (
     <div className="App">
       <h1>Place CRDT</h1>
-      <div>made by Liang and Alex</div>
+      <div>made by Liang and Alex. <a href='https://github.com/StuffByLiang/PlaceCRDT'>Github Repo</a></div>
       {syncedWithServer ? (
         // green sycned with server
         <div style={{ color: 'green' }}>Synced with server</div>
