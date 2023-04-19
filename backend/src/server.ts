@@ -62,7 +62,6 @@ io.on('connection', (socket: Socket) => {
 
     socket.on('sync', ({ syncMessage }: any) => {
         counter++;
-        console.log(syncMessage)
         console.log("received sync message of size " + syncMessage.length)
         const syncState = syncStates[socket.id];
         const [nextBoard, nextSyncState, patch] = Automerge.receiveSyncMessage(board, syncState, syncMessage);

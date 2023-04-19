@@ -6,36 +6,6 @@ import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import { colorToUint8, uint8ToColor } from "./utils";
 
-// export const colors = [
-//   "#ffffff", // white
-//   "#000000", // black
-//   "#c2c2c2", // light gray
-//   "#7f7f7f", // dark gray
-//   "#ff0000", // red
-//   "#00ff00", // green
-//   "#0000ff", // blue
-//   "#ffff00", // yellow
-//   "#ff00ff", // magenta
-//   "#00ffff", // cyan
-//   "#a349a4", // purple
-//   "#ffb5c5", // light pink
-//   "#ff7f00", // orange
-//   "#b87333", // brown
-//   "#4c2f27", // dark brown
-// ];
-
-// give us a mapping from color to uint8
-// export const colorToUint8 = colors.reduce((acc, color, i) => {
-//   acc[color] = i;
-//   return acc;
-// }, {} as { [color: string]: number });
-
-// // give us a mapping from uint8 to color
-// export const uint8ToColor = colors.reduce((acc, color, i) => {
-//   acc[i] = color;
-//   return acc;
-// }, {} as { [uint8: number]: string });
-
 export const url = process.env.NODE_ENV === "development" ? "localhost:4161" : "https://placecrdtbackend.stuffbyliang.com";
 
 let board: Automerge.Doc<Board>;
@@ -44,26 +14,6 @@ export const socket = io(url, {
 });
 let syncState = Automerge.initSyncState(); // in-memory sync state
 
-// Set the color of a pixel at the specified position
-// export function setColor(x: number, y: number, color: number) {
-//   console.log(x, y, color)
-//   // time this change
-//   const newBoard = Automerge.change(board, (board) => {
-//     board.pixels[y * 40 + x] = color;
-//     console.log(board.pixels)
-//   });
-//   console.log(newBoard.pixels)
-//   updateBoard(newBoard);
-//   socket.emit("board", { boardBinary: Automerge.save(newBoard) });
-//   console.log("board sent")
-// }
-
-// export function updateBoard(newBoard: Automerge.Doc<Board>) {
-//   board = newBoard;
-//   let binary = Automerge.save(newBoard)
-//   localforage.setItem("board", binary).catch(err => console.log(err))
-//   setCanvasData(getCanvasData());
-// }
 
 export function useBoard() {
   const [canvasData, setCanvasData] = useState(getCanvasData());
@@ -127,14 +77,10 @@ export function useBoard() {
 
   // Set the color of a pixel at the specified position
   function setColor(x: number, y: number, color: number) {
-    console.log(x, y, color)
-    // time this change
     const newBoard = Automerge.change(board, (board) => {
       board.pixels[y * 40 + x] = color;
     });
     updateBoard(newBoard);
-    // print size of board
-    console.log("board size: " + Automerge.save(newBoard).length)
     syncBoard();
 
     // the following would send the entire board
@@ -143,10 +89,10 @@ export function useBoard() {
   }
 
   async function loadBoard() {
-    const binary: any = await localforage.getItem("board");
+    const binary: Uint8Array | null = await localforage.getItem("board");
     let newboard: Board;
     if (binary) {
-      newboard = Automerge.load(binary)
+      newboard = Automerge.merge(createAutomergeBoard(40), Automerge.load(binary));
       console.log("board loaded from local storage")
     } else {
       console.log("no board found in local storage")
@@ -159,6 +105,8 @@ export function useBoard() {
 
   function updateBoard(newBoard: Automerge.Doc<Board>) {
     board = newBoard;
+    //@ts-ignore
+    window.board = board;
     let binary = Automerge.save(newBoard)
     localforage.setItem("board", binary).catch(err => console.log(err))
     setCanvasData(getCanvasData());
