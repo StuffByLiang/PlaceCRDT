@@ -42,6 +42,7 @@ let board: Automerge.Doc<Board> = createAutomergeBoard(40);
 const socket = io(url, {
   autoConnect: false
 });
+let syncState = Automerge.initSyncState(); // in-memory sync state
 
 // Set the color of a pixel at the specified position
 // export function setColor(x: number, y: number, color: number) {
@@ -80,6 +81,15 @@ export function useBoard() {
       setSyncedWithServer(true);
     })
 
+    socket.on("sync", ({syncMessage}: any) => {
+      // receiving the sync message from the server
+      console.log("sync received")
+      const [nextBoard, nextSyncState, patch] = Automerge.receiveSyncMessage(board, syncState, new Uint8Array(syncMessage));
+      syncState = nextSyncState;
+      updateBoard(nextBoard);
+      setSyncedWithServer(true);
+    })
+
     // check for disconnect
     socket.on("disconnect", () => {
       console.log("disconnected")
@@ -93,8 +103,8 @@ export function useBoard() {
     // time this change
     const newBoard = Automerge.change(board, (board) => {
       const position = y * 40 + x;
-      const index = Math.floor(position/2);
-      
+      const index = Math.floor(position / 2);
+
       // if the position is even we set the first 4 bits
       if (position % 2 === 0) {
         board.pixels[index] = (board.pixels[index] & 0x0f) | (color << 4);
@@ -105,8 +115,18 @@ export function useBoard() {
     updateBoard(newBoard);
     // print size of board
     console.log("board size: " + Automerge.save(newBoard).length)
-    socket.emit("board", { boardBinary: Automerge.save(newBoard) });
-    console.log("board sent")
+
+    const [nextSyncState, syncMessage] = Automerge.generateSyncMessage(board, syncState);
+    syncState = nextSyncState;
+
+    if (syncMessage) {
+      socket.emit("sync", { syncMessage });
+      console.log("sync sent")
+    }
+
+    // the following would send the entire board
+    // socket.emit("board", { boardBinary: Automerge.save(newBoard) });
+    // console.log("board sent")
   }
 
   async function loadBoard() {

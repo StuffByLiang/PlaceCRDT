@@ -2,6 +2,7 @@ import { createAutomergeBoard } from "./board";
 import * as Automerge from "@automerge/automerge";
 import fs from "fs";
 import { Board } from "./types";
+import { Socket } from "socket.io";
 
 const express = require('express');
 const app = express();
@@ -30,16 +31,49 @@ if (fs.existsSync('board')) {
 }
 let counter = 0;
 
-io.on('connection', (socket: any) => {
+// global variables (but maybe don't use global variables)
+let syncStates: { [key: string]: Automerge.SyncState } = {} // a hash of [socketId] containing in-memory sync states
+
+io.on('connection', (socket: Socket) => {
+    function updatePeers() {
+        console.log("updating peers")
+        Object.entries(syncStates).forEach(([socketId, syncState]) => {
+            const [nextSyncState, syncMessage] = Automerge.generateSyncMessage(
+                board,
+                syncState
+            )
+            console.log("sending sync message of size " + syncMessage?.length)
+            syncStates[socketId] = nextSyncState
+            if (syncMessage) {
+                io.to(socketId).emit('sync', { syncMessage })
+            }
+        })
+    }
+
     console.log('a user connected');
+    syncStates[socket.id] = Automerge.initSyncState();
     socket.emit('board', { boardBinary: Automerge.save(board) }); // send initial board
 
     socket.on('disconnect', () => {
         console.log('user disconnected');
+        delete syncStates[socket.id];
+    });
+
+    socket.on('sync', ({ syncMessage }: any) => {
+        console.log(syncMessage)
+        console.log("received sync message of size " + syncMessage.length)
+        const syncState = syncStates[socket.id];
+        const [nextBoard, nextSyncState, patch] = Automerge.receiveSyncMessage(board, syncState, syncMessage);
+        board = nextBoard;
+        console.log("board is now of size " + Automerge.save(board).length)
+        syncStates[socket.id] = nextSyncState;
+        updatePeers();
     });
 
     socket.on('board', ({ boardBinary }: any) => {
         counter++;
+
+
         const otherBoard: any = Automerge.load(new Uint8Array(boardBinary));
         console.log("received board of size     " + boardBinary.length)
         board = Automerge.merge(board, otherBoard);
